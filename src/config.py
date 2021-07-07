@@ -2,35 +2,23 @@ from transformers import *
 
 # special tokens indices in different models available in transformers
 TOKEN_IDX = {
-    'bert': {
-        'START_SEQ': 101,
-        'PAD': 0,
-        'END_SEQ': 102,
-        'UNK': 100
-    },
-    'xlm': {
-        'START_SEQ': 0,
-        'PAD': 2,
-        'END_SEQ': 1,
-        'UNK': 3
-    },
-    'roberta': {
-        'START_SEQ': 0,
-        'PAD': 1,
-        'END_SEQ': 2,
-        'UNK': 3
-    },
-    'albert': {
-        'START_SEQ': 2,
-        'PAD': 0,
-        'END_SEQ': 3,
-        'UNK': 1
-    },
+    'bert': {'START_SEQ': 101, 'PAD': 0, 'END_SEQ': 102, 'UNK': 100},
+    'xlm': {'START_SEQ': 0, 'PAD': 2, 'END_SEQ': 1, 'UNK': 3},
+    'roberta': {'START_SEQ': 0, 'PAD': 1, 'END_SEQ': 2, 'UNK': 3},
+    'albert': {'START_SEQ': 2, 'PAD': 0, 'END_SEQ': 3, 'UNK': 1},
 }
 
 # 'O' -> No punctuation
-punctuation_dict = {'O': 0, 'COMMA': 1, 'PERIOD': 2, 'QUESTION': 3}
-
+punctuation_dict = {
+    "O": 0,
+    "COMMA": 1,
+    "HYPHEN": 2,
+    "COLON": 3,
+    "PERIOD": 4,
+    "EXCL": 5,
+    "SEMICOLON": 6,
+    "QUESTION": 7,
+}
 
 # pretrained model name: (model class, model tokenizer, output dimension, token style)
 MODELS = {
@@ -43,10 +31,27 @@ MODELS = {
     'roberta-base': (RobertaModel, RobertaTokenizer, 768, 'roberta'),
     'roberta-large': (RobertaModel, RobertaTokenizer, 1024, 'roberta'),
     'distilbert-base-uncased': (DistilBertModel, DistilBertTokenizer, 768, 'bert'),
-    'distilbert-base-multilingual-cased': (DistilBertModel, DistilBertTokenizer, 768, 'bert'),
+    'distilbert-base-multilingual-cased': (
+        DistilBertModel,
+        DistilBertTokenizer,
+        768,
+        'bert',
+    ),
     'xlm-roberta-base': (XLMRobertaModel, XLMRobertaTokenizer, 768, 'roberta'),
     'xlm-roberta-large': (XLMRobertaModel, XLMRobertaTokenizer, 1024, 'roberta'),
     'albert-base-v1': (AlbertModel, AlbertTokenizer, 768, 'albert'),
     'albert-base-v2': (AlbertModel, AlbertTokenizer, 768, 'albert'),
     'albert-large-v2': (AlbertModel, AlbertTokenizer, 1024, 'albert'),
+    'dkleczek/bert-base-polish-uncased-v1': (
+        BertModel.from_pretrained("dkleczek/bert-base-polish-uncased-v1"),
+        BertTokenizer.from_pretrained("dkleczek/bert-base-polish-uncased-v1"),
+        768,
+        'bert',
+    ),
+    'dkleczek/bert-base-polish-cased-v1': (
+        BertModel.from_pretrained("dkleczek/bert-base-polish-cased-v1"),
+        BertTokenizer.from_pretrained("dkleczek/bert-base-polish-cased-v1"),
+        768,
+        'bert',
+    ),
 }

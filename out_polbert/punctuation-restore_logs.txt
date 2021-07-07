@@ -1,0 +1,13 @@
+Namespace(alpha_del=0.4, alpha_sub=0.4, augment_rate=0.1, augment_type='all', batch_size=8, cuda=True, data_path='data', decay=0, epoch=15, freeze_bert=False, gradient_clip=-1, language='polish', lr=5e-06, lstm_dim=-1, name='punctuation-restore', pretrained_model='dkleczek/bert-base-polish-uncased-v1', save_path='out_polbert', seed=1, sequence_length=256, sub_style='unk', use_crf=False)
+epoch: 0, Train loss: 0.35010179207620734, Train accuracy: 0.8764524853680281
+epoch: 0, Val loss: 0.19024664533683677, Val accuracy: 0.9177815757381543
+epoch: 1, Train loss: 0.19258935645757744, Train accuracy: 0.9160694216564796
+epoch: 1, Val loss: 0.1591864685509719, Val accuracy: 0.9309980327752112
+epoch: 2, Train loss: 0.16896806757033714, Train accuracy: 0.924932431975511
+epoch: 2, Val loss: 0.14276899243978894, Val accuracy: 0.9367839880364248
+epoch: 3, Train loss: 0.15479230671569755, Train accuracy: 0.9302327503616178
+epoch: 3, Val loss: 0.13648406567137225, Val accuracy: 0.938548704391095
+epoch: 4, Train loss: 0.14514945930638173, Train accuracy: 0.9339473939381184
+epoch: 4, Val loss: 0.13209648547219296, Val accuracy: 0.9416041338424974
+epoch: 5, Train loss: 0.1381949142626891, Train accuracy: 0.936657333555765
+epoch: 5, Val loss: 0.12876314565149788, Val accuracy: 0.9420581087937618

@@ -1,18 +1,21 @@
 import os
-import torch
-import torch.nn as nn
+
 import numpy as np
-from torch.utils import data
+import torch
 import torch.multiprocessing
+import torch.nn as nn
+from torch.utils import data
 from tqdm import tqdm
 
+import augmentation
 from argparser import parse_arguments
+from config import *
 from dataset import Dataset
 from model import DeepPunctuation, DeepPunctuationCRF
-from config import *
-import augmentation
 
-torch.multiprocessing.set_sharing_strategy('file_system')   # https://github.com/pytorch/pytorch/issues/11201
+torch.multiprocessing.set_sharing_strategy(
+    'file_system'
+)  # https://github.com/pytorch/pytorch/issues/11201
 
 args = parse_arguments()
 
@@ -34,54 +37,180 @@ sequence_len = args.sequence_length
 aug_type = args.augment_type
 
 # Datasets
-if args.language == 'english':
-    train_set = Dataset(os.path.join(args.data_path, 'en/train2012'), tokenizer=tokenizer, sequence_len=sequence_len,
-                        token_style=token_style, is_train=True, augment_rate=ar, augment_type=aug_type)
-    val_set = Dataset(os.path.join(args.data_path, 'en/dev2012'), tokenizer=tokenizer, sequence_len=sequence_len,
-                      token_style=token_style, is_train=False)
-    test_set_ref = Dataset(os.path.join(args.data_path, 'en/test2011'), tokenizer=tokenizer, sequence_len=sequence_len,
-                           token_style=token_style, is_train=False)
-    test_set_asr = Dataset(os.path.join(args.data_path, 'en/test2011asr'), tokenizer=tokenizer, sequence_len=sequence_len,
-                           token_style=token_style, is_train=False)
+if args.language == 'polish':
+    train_set = Dataset(
+        os.path.join(args.data_path, 'pl/train'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=True,
+        augment_rate=ar,
+        augment_type=aug_type,
+    )
+    val_set = Dataset(
+        os.path.join(args.data_path, 'pl/dev'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_ref = Dataset(
+        os.path.join(args.data_path, 'pl/test'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_asr = Dataset(
+        os.path.join(args.data_path, 'pl/test'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set = [val_set, test_set_ref, test_set_asr]
+elif args.language == 'english':
+    train_set = Dataset(
+        os.path.join(args.data_path, 'en/train2012'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=True,
+        augment_rate=ar,
+        augment_type=aug_type,
+    )
+    val_set = Dataset(
+        os.path.join(args.data_path, 'en/dev2012'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_ref = Dataset(
+        os.path.join(args.data_path, 'en/test2011'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_asr = Dataset(
+        os.path.join(args.data_path, 'en/test2011asr'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
     test_set = [val_set, test_set_ref, test_set_asr]
 elif args.language == 'bangla':
-    train_set = Dataset(os.path.join(args.data_path, 'bn/train'), tokenizer=tokenizer, sequence_len=sequence_len,
-                        token_style=token_style, is_train=True, augment_rate=ar, augment_type=aug_type)
-    val_set = Dataset(os.path.join(args.data_path, 'bn/dev'), tokenizer=tokenizer, sequence_len=sequence_len,
-                      token_style=token_style, is_train=False)
-    test_set_news = Dataset(os.path.join(args.data_path, 'bn/test_news'), tokenizer=tokenizer, sequence_len=sequence_len,
-                            token_style=token_style, is_train=False)
-    test_set_ref = Dataset(os.path.join(args.data_path, 'bn/test_ref'), tokenizer=tokenizer, sequence_len=sequence_len,
-                           token_style=token_style, is_train=False)
-    test_set_asr = Dataset(os.path.join(args.data_path, 'bn/test_asr'), tokenizer=tokenizer, sequence_len=sequence_len,
-                           token_style=token_style, is_train=False)
+    train_set = Dataset(
+        os.path.join(args.data_path, 'bn/train'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=True,
+        augment_rate=ar,
+        augment_type=aug_type,
+    )
+    val_set = Dataset(
+        os.path.join(args.data_path, 'bn/dev'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_news = Dataset(
+        os.path.join(args.data_path, 'bn/test_news'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_ref = Dataset(
+        os.path.join(args.data_path, 'bn/test_ref'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_asr = Dataset(
+        os.path.join(args.data_path, 'bn/test_asr'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
     test_set = [val_set, test_set_news, test_set_ref, test_set_asr]
 elif args.language == 'english-bangla':
-    train_set = Dataset([os.path.join(args.data_path, 'en/train2012'), os.path.join(args.data_path, 'bn/train_bn')],
-                        tokenizer=tokenizer, sequence_len=sequence_len, token_style=token_style, is_train=True,
-                        augment_rate=ar, augment_type=aug_type)
-    val_set = Dataset([os.path.join(args.data_path, 'en/dev2012'), os.path.join(args.data_path, 'bn/dev_bn')],
-                      tokenizer=tokenizer, sequence_len=sequence_len, token_style=token_style, is_train=False)
-    test_set_ref = Dataset(os.path.join(args.data_path, 'en/test2011'), tokenizer=tokenizer, sequence_len=sequence_len,
-                           token_style=token_style, is_train=False)
-    test_set_asr = Dataset(os.path.join(args.data_path, 'en/test2011asr'), tokenizer=tokenizer, sequence_len=sequence_len,
-                           token_style=token_style, is_train=False)
-    test_set_news = Dataset(os.path.join(args.data_path, 'bn/test_news'), tokenizer=tokenizer, sequence_len=sequence_len,
-                            token_style=token_style, is_train=False)
-    test_bn_ref = Dataset(os.path.join(args.data_path, 'bn/test_ref'), tokenizer=tokenizer, sequence_len=sequence_len,
-                          token_style=token_style, is_train=False)
-    test_bn_asr = Dataset(os.path.join(args.data_path, 'bn/test_asr'), tokenizer=tokenizer, sequence_len=sequence_len,
-                          token_style=token_style, is_train=False)
-    test_set = [val_set, test_set_ref, test_set_asr, test_set_news, test_bn_ref, test_bn_asr]
+    train_set = Dataset(
+        [
+            os.path.join(args.data_path, 'en/train2012'),
+            os.path.join(args.data_path, 'bn/train_bn'),
+        ],
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=True,
+        augment_rate=ar,
+        augment_type=aug_type,
+    )
+    val_set = Dataset(
+        [
+            os.path.join(args.data_path, 'en/dev2012'),
+            os.path.join(args.data_path, 'bn/dev_bn'),
+        ],
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_ref = Dataset(
+        os.path.join(args.data_path, 'en/test2011'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_asr = Dataset(
+        os.path.join(args.data_path, 'en/test2011asr'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set_news = Dataset(
+        os.path.join(args.data_path, 'bn/test_news'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_bn_ref = Dataset(
+        os.path.join(args.data_path, 'bn/test_ref'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_bn_asr = Dataset(
+        os.path.join(args.data_path, 'bn/test_asr'),
+        tokenizer=tokenizer,
+        sequence_len=sequence_len,
+        token_style=token_style,
+        is_train=False,
+    )
+    test_set = [
+        val_set,
+        test_set_ref,
+        test_set_asr,
+        test_set_news,
+        test_bn_ref,
+        test_bn_asr,
+    ]
 else:
     raise ValueError('Incorrect language argument for Dataset')
 
 # Data Loaders
-data_loader_params = {
-    'batch_size': args.batch_size,
-    'shuffle': True,
-    'num_workers': 1
-}
+data_loader_params = {'batch_size': args.batch_size, 'shuffle': True, 'num_workers': 1}
 train_loader = torch.utils.data.DataLoader(train_set, **data_loader_params)
 val_loader = torch.utils.data.DataLoader(val_set, **data_loader_params)
 test_loaders = [torch.utils.data.DataLoader(x, **data_loader_params) for x in test_set]
@@ -95,12 +224,18 @@ log_path = os.path.join(args.save_path, args.name + '_logs.txt')
 # Model
 device = torch.device('cuda' if (args.cuda and torch.cuda.is_available()) else 'cpu')
 if args.use_crf:
-    deep_punctuation = DeepPunctuationCRF(args.pretrained_model, freeze_bert=args.freeze_bert, lstm_dim=args.lstm_dim)
+    deep_punctuation = DeepPunctuationCRF(
+        args.pretrained_model, freeze_bert=args.freeze_bert, lstm_dim=args.lstm_dim
+    )
 else:
-    deep_punctuation = DeepPunctuation(args.pretrained_model, freeze_bert=args.freeze_bert, lstm_dim=args.lstm_dim)
+    deep_punctuation = DeepPunctuation(
+        args.pretrained_model, freeze_bert=args.freeze_bert, lstm_dim=args.lstm_dim
+    )
 deep_punctuation.to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(deep_punctuation.parameters(), lr=args.lr, weight_decay=args.decay)
+optimizer = torch.optim.Adam(
+    deep_punctuation.parameters(), lr=args.lr, weight_decay=args.decay
+)
 
 
 def validate(data_loader):
@@ -114,7 +249,12 @@ def validate(data_loader):
     val_loss = 0
     with torch.no_grad():
         for x, y, att, y_mask in tqdm(data_loader, desc='eval'):
-            x, y, att, y_mask = x.to(device), y.to(device), att.to(device), y_mask.to(device)
+            x, y, att, y_mask = (
+                x.to(device),
+                y.to(device),
+                att.to(device),
+                y_mask.to(device),
+            )
             y_mask = y_mask.view(-1)
             if args.use_crf:
                 y_predict = deep_punctuation(x, att, y)
@@ -132,7 +272,7 @@ def validate(data_loader):
             y_mask = y_mask.view(-1)
             correct += torch.sum(y_mask * (y_predict == y).long()).item()
             total += torch.sum(y_mask).item()
-    return correct/total, val_loss/num_iteration
+    return correct / total, val_loss / num_iteration
 
 
 def test(data_loader):
@@ -142,15 +282,20 @@ def test(data_loader):
     num_iteration = 0
     deep_punctuation.eval()
     # +1 for overall result
-    tp = np.zeros(1+len(punctuation_dict), dtype=np.int)
-    fp = np.zeros(1+len(punctuation_dict), dtype=np.int)
-    fn = np.zeros(1+len(punctuation_dict), dtype=np.int)
+    tp = np.zeros(1 + len(punctuation_dict), dtype=np.int)
+    fp = np.zeros(1 + len(punctuation_dict), dtype=np.int)
+    fn = np.zeros(1 + len(punctuation_dict), dtype=np.int)
     cm = np.zeros((len(punctuation_dict), len(punctuation_dict)), dtype=np.int)
     correct = 0
     total = 0
     with torch.no_grad():
         for x, y, att, y_mask in tqdm(data_loader, desc='test'):
-            x, y, att, y_mask = x.to(device), y.to(device), att.to(device), y_mask.to(device)
+            x, y, att, y_mask = (
+                x.to(device),
+                y.to(device),
+                att.to(device),
+                y_mask.to(device),
+            )
             y_mask = y_mask.view(-1)
             if args.use_crf:
                 y_predict = deep_punctuation(x, att, y)
@@ -182,16 +327,16 @@ def test(data_loader):
     tp[-1] = np.sum(tp[1:])
     fp[-1] = np.sum(fp[1:])
     fn[-1] = np.sum(fn[1:])
-    precision = tp/(tp+fp)
-    recall = tp/(tp+fn)
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
     f1 = 2 * precision * recall / (precision + recall)
 
-    return precision, recall, f1, correct/total, cm
+    return precision, recall, f1, correct / total, cm
 
 
 def train():
     with open(log_path, 'a') as f:
-        f.write(str(args)+'\n')
+        f.write(str(args) + '\n')
     best_val_acc = 0
     for epoch in range(args.epoch):
         train_loss = 0.0
@@ -200,7 +345,12 @@ def train():
         total = 0
         deep_punctuation.train()
         for x, y, att, y_mask in tqdm(train_loader, desc='train'):
-            x, y, att, y_mask = x.to(device), y.to(device), att.to(device), y_mask.to(device)
+            x, y, att, y_mask = (
+                x.to(device),
+                y.to(device),
+                att.to(device),
+                y_mask.to(device),
+            )
             y_mask = y_mask.view(-1)
             if args.use_crf:
                 loss = deep_punctuation.log_likelihood(x, att, y)
@@ -222,7 +372,9 @@ def train():
             loss.backward()
 
             if args.gradient_clip > 0:
-                torch.nn.utils.clip_grad_norm_(deep_punctuation.parameters(), args.gradient_clip)
+                torch.nn.utils.clip_grad_norm_(
+                    deep_punctuation.parameters(), args.gradient_clip
+                )
             optimizer.step()
 
             y_mask = y_mask.view(-1)
@@ -230,13 +382,17 @@ def train():
             total += torch.sum(y_mask).item()
 
         train_loss /= train_iteration
-        log = 'epoch: {}, Train loss: {}, Train accuracy: {}'.format(epoch, train_loss, correct / total)
+        log = 'epoch: {}, Train loss: {}, Train accuracy: {}'.format(
+            epoch, train_loss, correct / total
+        )
         with open(log_path, 'a') as f:
             f.write(log + '\n')
         print(log)
 
         val_acc, val_loss = validate(val_loader)
-        log = 'epoch: {}, Val loss: {}, Val accuracy: {}'.format(epoch, val_loss, val_acc)
+        log = 'epoch: {}, Val loss: {}, Val accuracy: {}'.format(
+            epoch, val_loss, val_acc
+        )
         with open(log_path, 'a') as f:
             f.write(log + '\n')
         print(log)
@@ -248,14 +404,36 @@ def train():
     deep_punctuation.load_state_dict(torch.load(model_save_path))
     for loader in test_loaders:
         precision, recall, f1, accuracy, cm = test(loader)
-        log = 'Precision: ' + str(precision) + '\n' + 'Recall: ' + str(recall) + '\n' + 'F1 score: ' + str(f1) + \
-              '\n' + 'Accuracy:' + str(accuracy) + '\n' + 'Confusion Matrix' + str(cm) + '\n'
+        log = (
+            'Precision: '
+            + str(precision)
+            + '\n'
+            + 'Recall: '
+            + str(recall)
+            + '\n'
+            + 'F1 score: '
+            + str(f1)
+            + '\n'
+            + 'Accuracy:'
+            + str(accuracy)
+            + '\n'
+            + 'Confusion Matrix'
+            + str(cm)
+            + '\n'
+        )
         print(log)
         with open(log_path, 'a') as f:
             f.write(log)
         log_text = ''
         for i in range(1, 5):
-            log_text += str(precision[i] * 100) + ' ' + str(recall[i] * 100) + ' ' + str(f1[i] * 100) + ' '
+            log_text += (
+                str(precision[i] * 100)
+                + ' '
+                + str(recall[i] * 100)
+                + ' '
+                + str(f1[i] * 100)
+                + ' '
+            )
         with open(log_path, 'a') as f:
             f.write(log_text[:-1] + '\n\n')
 

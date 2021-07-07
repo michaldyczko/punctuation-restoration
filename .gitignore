@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# PL JSONS
+data/pl/json
+settings.json
