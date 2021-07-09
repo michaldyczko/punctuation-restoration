@@ -53,6 +53,5 @@ MODELS = {
         BertTokenizer.from_pretrained("dkleczek/bert-base-polish-cased-v1"),
         768,
         'bert',
-    ),
-    'distilbert-base-uncased':(DistilBertModel, DistilBertTokenizer, '768', 'distilbert'),
+    )
 }
