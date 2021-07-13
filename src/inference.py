@@ -92,12 +92,9 @@ def inference():
     punctuation_map = {
         0: "",
         1: ",",
-        2: "-",
-        3: ":",
-        4: ".",
-        5: "!",
-        6: ";",
-        7: "?",
+        2: ":",
+        3: ".",
+        4: "?",
     }
     # punctuation_map = {0: '', 1: ',', 2: '.', 3: '?'}
     if args.language == 'bn':

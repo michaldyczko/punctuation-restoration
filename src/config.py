@@ -12,12 +12,9 @@ TOKEN_IDX = {
 punctuation_dict = {
     "O": 0,
     "COMMA": 1,
-    "HYPHEN": 2,
-    "COLON": 3,
-    "PERIOD": 4,
-    "EXCL": 5,
-    "SEMICOLON": 6,
-    "QUESTION": 7,
+    "COLON": 2,
+    "PERIOD": 3,
+    "QUESTION": 4,
 }
 
 # pretrained model name: (model class, model tokenizer, output dimension, token style)
