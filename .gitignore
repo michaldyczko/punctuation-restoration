@@ -129,6 +129,9 @@ dmypy.json
 .pyre/
 
 
-# PL JSONS
+# PL
 data/pl/json
+data/pl/med
 settings.json
+roberta_large_transformers
+out*

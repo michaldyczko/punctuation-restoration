@@ -43,15 +43,21 @@ MODELS = {
     'albert-base-v2': (AlbertModel, AlbertTokenizer, 768, 'albert'),
     'albert-large-v2': (AlbertModel, AlbertTokenizer, 1024, 'albert'),
     'dkleczek/bert-base-polish-uncased-v1': (
-        BertModel.from_pretrained("dkleczek/bert-base-polish-uncased-v1"),
-        BertTokenizer.from_pretrained("dkleczek/bert-base-polish-uncased-v1"),
+        BertModel,
+        BertTokenizer,
         768,
         'bert',
     ),
     'dkleczek/bert-base-polish-cased-v1': (
-        BertModel.from_pretrained("dkleczek/bert-base-polish-cased-v1"),
-        BertTokenizer.from_pretrained("dkleczek/bert-base-polish-cased-v1"),
+        BertModel,
+        BertTokenizer,
         768,
         'bert',
+    ),
+    'roberta_large_transformers': (
+        AutoModel,
+        PreTrainedTokenizerFast,
+        1024,
+        'roberta'
     )
 }
