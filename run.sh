@@ -3,9 +3,9 @@
 #SBATCH -n 4
 #SBATCH -c 4
 #SBATCH -A g85-964
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --exclude=rysy-n7
-#SBATCH --time=05:00:00
+#SBATCH --time=10:00:00
 #SBATCH -o out.%j.out
 #SBATCH -e err.%j.err
 
