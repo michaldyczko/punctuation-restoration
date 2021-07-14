@@ -53,7 +53,7 @@ MODELS = {
     ),
     'roberta_large_transformers': (
         AutoModel,
-        PreTrainedTokenizerFast,
+        PreTrainedTokenizer,
         1024,
         'roberta'
     )
