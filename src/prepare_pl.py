@@ -3,6 +3,8 @@ import os
 from random import randint
 import regex as re
 import random
+import tqdm
+from tqdm.contrib.concurrent import process_map
 
 
 def random_with_N_digits(n):
@@ -10,7 +12,7 @@ def random_with_N_digits(n):
     range_end = (10 ** n) - 1
     return randint(range_start, range_end)
 
-TO_OMMIT = {'"', '„', '”', '(', ')', "'"}
+TO_OMMIT = {'"', '„', '”', '(', ')', "'", "»", "«", '…'}
 
 p_dct = {
     "": "O",
@@ -101,8 +103,12 @@ def clean_text(txt):
     txt = re.sub(r'^[^(\n]*\).*$\n', '', txt, flags=re.M)                                           #
     txt = re.sub(r'[ \t]?(\p{P})[ \t]?', r' \g<1> ', txt)                                           # add whitespace next to punctuation
     txt = re.sub(r'([ \t]+)', ' ', txt)                                                             # remove whitespace multiplication
-    txt = re.sub(r'(\D)1\s?[°º]C', r'\g<1> stopnia Celsjusza', txt)                                 # 1°C -> stopień Celsjusza
-    txt = re.sub(r'([0-9]+)\s?°C', r'\g<1> stopni Celsjusza', txt)                                  # °C -> stopni Celsjusza
+    txt = re.sub(r'(\D)1\s?[°º]C', r'\g<1> stopnia Celsjusza', txt)                                 # 1° -> stopień 
+    txt = re.sub(r'(\D)1\?[°º]F', r'\g<1> stopnia Fahrenheita', txt)                                # 
+    txt = re.sub(r'(\D)1\?[°º]', r'\g<1> stopnia', txt)                                             # 
+    txt = re.sub(r'([0-9]+)\s?°C', r'\g<1> stopni Celsjusza', txt)                                  # ° -> stopni
+    txt = re.sub(r'([0-9]+)\s?°F', r'\g<1> stopni Fahrenheita', txt)                                # 
+    txt = re.sub(r'([0-9]+)\s?°', r'\g<1> stopni', txt)                                             # 
     txt = re.sub(r'\s?/\s*m2 ', ' na metr kwadratowy ', txt)                                        # / -> na
     txt = re.sub(r'\s?/\s*l ', ' na litr ', txt)                                                    # 
     txt = re.sub(r'\s?/\s*ml ', ' na mililitr ', txt)                                               # 
@@ -143,7 +149,10 @@ def clean_text(txt):
     txt = re.sub(r' j \.?', r" jednostek ", txt)                                                    # 
     txt = re.sub(r'\sx\s', r" razy ", txt)                                                          # 
     txt = re.sub(r'\s?½\s?', r" pół ", txt)                                                         # 
-    txt = re.sub(r'±', 'plus minus', txt, flags=re.M)                                               # 
+    txt = re.sub(r'\s?²\s?', r" kwadratowych ", txt)                                                # 
+    txt = re.sub(r'\s?³\s?', r" sześciennych ", txt)                                                # 
+    txt = re.sub(r'\s?±\s?', ' plus minus ', txt, flags=re.M)                                       # 
+    txt = re.sub(r'\s?\+\s?', ' plus ', txt, flags=re.M)                                             # 
     txt = re.sub(r'\s?%(\. )?', " procent", txt)                                                    #
     txt = re.sub(r'm \. in \.', r"między innymi", txt)                                              # 
     txt = re.sub(r'm \. c \.?', r"masy ciała", txt)                                                 # 
@@ -192,7 +201,7 @@ def clean_text(txt):
     txt = re.sub(r'([0-9,]+?)\s+(-|–)\s+([0-9,]+?)', r'\g<1>-\g<3>', txt)                           #
     txt = re.sub(r'( ? - ?)?([0-9]+)( ? - ?)([^\d\p{P}])', r'\g<1>\g<2>-\g<4>', txt)                #
     while True:                                                                                     # 
-        txt, n = re.subn(r'([^ \d,]+) (\d+) , (\d+) ([^(lub)(i)][^ \d,]+)', r'\g<1> \g<2>,\g<3> \g<4>', txt)#
+        txt, n = re.subn(r'([^ \d,]+) (\d+) , (\d+) ((?!i|lub)[^ \d,/]+)', r'\g<1> \g<2>,\g<3> \g<4>', txt)#
         if n == 0:                                                                                  #
             break                                                                                   #
     txt = re.sub(r'([0-9]+)([\. ]+)([0-9]+)-([0-9]+)([\. ]+)([0-9]+)', fix_ranges, txt)             #
@@ -228,6 +237,33 @@ with open('data/pl/med/pl.txt', 'r') as med:
                 lines[-1][1] = p_dct[part]
             else:
                 lines.append([part, "O"])
+
+with open('data/pl/wiki/corpus_wikipedia_2020-03-01_all_lines.txt', 'r') as wiki:
+    with open('data/pl/wiki/corpus_wikipedia_2020-03-01_all_lines_parsed.txt', 'w') as f:
+        while True:
+            chunks = ["".join([next(wiki, "") for _ in range(1000)]) for _ in range(1000)]
+            chunks = [ch for ch in chunks if len(ch) != 99]
+            if len(chunks) == 0:
+                break
+            chunks = process_map(clean_text, chunks)
+            for chunk in chunks:
+                f.write(chunk)
+    with open('data/pl/wiki/corpus_wikipedia_2020-03-01_all_lines_parsed.txt', 'r') as f:
+        i = 0
+        while True:
+            sentence = f.readline()
+            if sentence and i < 5_000_000:
+                for part in sentence.split():
+                    if part in TO_OMMIT:
+                        continue
+                    if part in p_dct:
+                        lines[-1][1] = p_dct[part]
+                    else:
+                        lines.append([part, "O"])
+                i += 1
+            else:
+                break
+
 
 
 for (root, dirs, files) in os.walk('data/pl/json'):
