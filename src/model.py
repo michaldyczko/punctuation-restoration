@@ -1,14 +1,15 @@
-import torch.nn as nn
 import torch
-from config import *
+import torch.nn as nn
 from torchcrf import CRF
+
+from config import *
 
 
 class DeepPunctuation(nn.Module):
     def __init__(self, pretrained_model, freeze_bert=False, lstm_dim=-1):
         super(DeepPunctuation, self).__init__()
         self.output_dim = len(punctuation_dict)
-        self.bert_layer = nn.DataParallel(MODELS[pretrained_model][0].from_pretrained(pretrained_model))
+        self.bert_layer = MODELS[pretrained_model][0].from_pretrained(pretrained_model)
         # Freeze bert layers
         if freeze_bert:
             for p in self.bert_layer.parameters():
@@ -18,8 +19,15 @@ class DeepPunctuation(nn.Module):
             hidden_size = bert_dim
         else:
             hidden_size = lstm_dim
-        self.lstm = nn.LSTM(input_size=bert_dim, hidden_size=hidden_size, num_layers=1, bidirectional=True)
-        self.linear = nn.Linear(in_features=hidden_size*2, out_features=len(punctuation_dict))
+        self.lstm = nn.LSTM(
+            input_size=bert_dim,
+            hidden_size=hidden_size,
+            num_layers=1,
+            bidirectional=True,
+        )
+        self.linear = nn.Linear(
+            in_features=hidden_size * 2, out_features=len(punctuation_dict)
+        )
 
     def forward(self, x, attn_masks):
         if len(x.shape) == 1:
@@ -54,5 +62,5 @@ class DeepPunctuationCRF(nn.Module):
         dec_out = self.crf.decode(x, mask=attn_masks)
         y_pred = torch.zeros(y.shape).long().to(y.device)
         for i in range(len(dec_out)):
-            y_pred[i, :len(dec_out[i])] = torch.tensor(dec_out[i]).to(y.device)
+            y_pred[i, : len(dec_out[i])] = torch.tensor(dec_out[i]).to(y.device)
         return y_pred
