@@ -138,7 +138,7 @@ def inference():
                     result.append(punctuation_map[y_predict[i].item()])
                     result.append(' ')
                     decode_idx += 1
-        result[-2] = '.' if (result[-2] in {'-', ':', ','}) else result[-2]
+        result[-2] = result[-2] if (result[-2] in {'.', '?', '!', '...'}) else '.'
         result[-1] = "\n"
     result = "".join(result)
     print('Punctuated text')
