@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.multiprocessing
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils import data
 from tqdm import tqdm
 
@@ -12,6 +13,22 @@ from argparser import parse_arguments
 from config import *
 from dataset import Dataset
 from model import DeepPunctuation, DeepPunctuationCRF
+
+
+class WeightedFocalLoss(nn.Module):
+    "Non weighted version of Focal Loss"
+    def __init__(self, alpha=.25, gamma=2):
+        super(WeightedFocalLoss, self).__init__()
+        self.alpha = torch.tensor([alpha, 1-alpha]).cuda()
+        self.gamma = gamma
+
+    def forward(self, inputs, targets):
+        BCE_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
+        targets = targets.type(torch.long)
+        at = self.alpha.gather(0, targets.data.view(-1))
+        pt = torch.exp(-BCE_loss)
+        F_loss = at*(1-pt)**self.gamma * BCE_loss
+        return F_loss.mean()
 
 torch.multiprocessing.set_sharing_strategy(
     'file_system'
@@ -264,7 +281,7 @@ else:
         args.pretrained_model, freeze_bert=args.freeze_bert, lstm_dim=args.lstm_dim
     )
 deep_punctuation.to(device)
-criterion = nn.CrossEntropyLoss()
+criterion = WeightedFocalLoss()
 optimizer = torch.optim.Adam(
     deep_punctuation.parameters(), lr=args.lr, weight_decay=args.decay
 )
