@@ -80,7 +80,7 @@ def inference():
 
     with open(args.in_file, 'r', encoding='utf-8') as f:
         bigtext = f.read()
-    result = ""
+    result = []
     for text in bigtext.split('\n'):
         text = re.sub(r"[,:\-–.!;?]", '', text)
         words_original_case = text.split()
@@ -134,13 +134,14 @@ def inference():
                     y_predict = torch.argmax(y_predict, dim=1).view(-1)
             for i in range(y_mask.shape[0]):
                 if y_mask[i] == 1:
-                    result += (
+                    result.append(
                         words_original_case[decode_idx]
                         + punctuation_map[y_predict[i].item()]
                         + ' '
                     )
                     decode_idx += 1
-        result = result[:-1] + '.\n'
+        result[-1] = '.\n'
+        result = "".join(result)
     print('Punctuated text')
     print(result)
     with open(args.out_file, 'w', encoding='utf-8') as f:
