@@ -17,7 +17,7 @@ from model import DeepPunctuation, DeepPunctuationCRF
 
 class FocalLoss(nn.Module):
     
-    def __init__(self, weight=None, gamma=2., reduction='none'):
+    def __init__(self, weight=None, gamma=2., reduction='mean'):
         nn.Module.__init__(self)
         self.weight = weight
         self.gamma = gamma
