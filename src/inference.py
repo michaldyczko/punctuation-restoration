@@ -140,7 +140,7 @@ def inference():
                         + ' '
                     )
                     decode_idx += 1
-        result[-1] = '.\n'
+        result = result[:-1] + '.\n'
     print('Punctuated text')
     print(result)
     with open(args.out_file, 'w', encoding='utf-8') as f:
