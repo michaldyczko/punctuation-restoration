@@ -140,6 +140,7 @@ def inference():
                         + ' '
                     )
                     decode_idx += 1
+        result[-2] = result[-2][:-1]
         result[-1] = '.\n'
     result = "".join(result)
     print('Punctuated text')
