@@ -134,13 +134,11 @@ def inference():
                     y_predict = torch.argmax(y_predict, dim=1).view(-1)
             for i in range(y_mask.shape[0]):
                 if y_mask[i] == 1:
-                    result.append(
-                        words_original_case[decode_idx]
-                        + punctuation_map[y_predict[i].item()]
-                        + ' '
-                    )
+                    result.append(words_original_case[decode_idx])
+                    result.append(punctuation_map[y_predict[i].item()])
+                    result.append(' ')
                     decode_idx += 1
-        result[-2] = result[-2][:-1]
+        result.pop()
         result[-1] = '.\n'
     result = "".join(result)
     print('Punctuated text')
