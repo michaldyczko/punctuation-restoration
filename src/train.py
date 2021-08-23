@@ -15,20 +15,23 @@ from dataset import Dataset
 from model import DeepPunctuation, DeepPunctuationCRF
 
 
-class WeightedFocalLoss(nn.Module):
-    "Non weighted version of Focal Loss"
-    def __init__(self, alpha=.25, gamma=2):
-        super(WeightedFocalLoss, self).__init__()
-        self.alpha = torch.tensor([alpha, 1-alpha]).cuda()
+class FocalLoss(nn.Module):
+    
+    def __init__(self, weight=None, gamma=2., reduction='none'):
+        nn.Module.__init__(self)
+        self.weight = weight
         self.gamma = gamma
-
-    def forward(self, inputs, targets):
-        BCE_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
-        targets = targets.type(torch.long)
-        at = self.alpha.gather(0, targets.data.view(-1))
-        pt = torch.exp(-BCE_loss)
-        F_loss = at*(1-pt)**self.gamma * BCE_loss
-        return F_loss.mean()
+        self.reduction = reduction
+        
+    def forward(self, input_tensor, target_tensor):
+        log_prob = F.log_softmax(input_tensor, dim=-1)
+        prob = torch.exp(log_prob)
+        return F.nll_loss(
+            ((1 - prob) ** self.gamma) * log_prob, 
+            target_tensor, 
+            weight=self.weight,
+            reduction = self.reduction
+        )
 
 torch.multiprocessing.set_sharing_strategy(
     'file_system'
@@ -281,7 +284,7 @@ else:
         args.pretrained_model, freeze_bert=args.freeze_bert, lstm_dim=args.lstm_dim
     )
 deep_punctuation.to(device)
-criterion = WeightedFocalLoss()
+criterion = FocalLoss()
 optimizer = torch.optim.Adam(
     deep_punctuation.parameters(), lr=args.lr, weight_decay=args.decay
 )
