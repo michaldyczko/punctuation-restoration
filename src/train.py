@@ -71,7 +71,7 @@ class RecallLoss(nn.Module):
                     F.log_softmax(input[i].unsqueeze(0), dim=1), target[i].unsqueeze(0)
                 )
             )
-        loss = torch.mean(loss)
+        loss = torch.mean(torch.cuda.FloatTensor(loss))
         return loss
 
 
@@ -349,7 +349,7 @@ optimizer = torch.optim.AdamW(
     deep_punctuation.parameters(),
     lr=args.lr,
     weight_decay=args.decay,
-    asmgrad=True,
+    amsgrad=True,
 )
 
 
