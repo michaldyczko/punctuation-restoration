@@ -71,7 +71,7 @@ class RecallLoss(nn.Module):
                     F.log_softmax(input[i].unsqueeze(0), dim=1), target[i].unsqueeze(0)
                 )
             )
-        loss = torch.mean(torch.cuda.FloatTensor(loss))
+        loss = torch.cat(loss, dim=0).mean()
         return loss
 
 
