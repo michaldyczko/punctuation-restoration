@@ -15,23 +15,83 @@ from dataset import Dataset
 from model import DeepPunctuation, DeepPunctuationCRF
 
 
+class RecallLoss(nn.Module):
+    """
+        Recall weighted loss by Zhen Qi <qizhen816@163.com>
+        Modified from:
+            An unofficial implementation of
+            <Recall Loss for Imbalanced Image Classification and Semantic Segmentation>
+            Created by: Zhang Shuai
+            Email: shuaizzz666@gmail.com
+            recall = TP / (TP + FN)
+    Args:
+        predict: A float32 tensor of shape [N, C, *], for Semantic segmentation task is [N, C, H, W]
+        target: A int64 tensor of shape [N, *], for Semantic segmentation task is [N, H, W]
+    Return:
+        diceloss
+    """
+
+    def __init__(
+        self,
+        ignore_index=255,
+    ):
+        super(RecallLoss, self).__init__()
+        self.smooth = 1e-5
+        self.nll_loss = nn.NLLLoss(
+            weight=None, ignore_index=ignore_index, reduction='mean'
+        )
+
+    def forward(self, input, target):
+        N, C = input.size()[:2]
+        _, predict = torch.max(input, 1)  # # (N, C, *) ==> (N, 1, *)
+
+        predict = predict.view(N, 1, -1)  # (N, 1, *)
+        target_ = target.view(N, 1, -1)  # (N, 1, *)
+        last_size = target_.size(-1)
+
+        ## convert predict & target (N, 1, *) into one hot vector (N, C, *)
+        predict_onehot = torch.zeros(
+            (N, C, last_size)
+        ).cuda()  # (N, 1, *) ==> (N, C, *)
+        predict_onehot.scatter_(1, predict, 1)  # (N, C, *)
+        target_onehot = torch.zeros((N, C, last_size)).cuda()  # (N, 1, *) ==> (N, C, *)
+        target_onehot.scatter_(1, target_, 1)  # (N, C, *)
+
+        true_positive = torch.sum(predict_onehot * target_onehot, dim=2)  # (N, C)
+        total_target = torch.sum(target_onehot, dim=2)  # (N, C)
+        ## Recall = TP / (TP + FN)
+        recall = (true_positive + self.smooth) / (total_target + self.smooth)  # (N, C)
+
+        recall = 1 - recall
+        loss = []
+        for i in range(0, input.shape[0]):
+            self.nll_loss.weight = recall[i]
+            loss.append(
+                self.nll_loss(
+                    F.log_softmax(input[i].unsqueeze(0), dim=1), target[i].unsqueeze(0)
+                )
+            )
+        loss = torch.mean(loss)
+        return loss
+
+
 class FocalLoss(nn.Module):
-    
-    def __init__(self, weight=None, gamma=2., reduction='mean'):
+    def __init__(self, weight=None, gamma=2.0, reduction='mean'):
         nn.Module.__init__(self)
         self.weight = weight
         self.gamma = gamma
         self.reduction = reduction
-        
+
     def forward(self, input_tensor, target_tensor):
         log_prob = F.log_softmax(input_tensor, dim=-1)
         prob = torch.exp(log_prob)
         return F.nll_loss(
-            ((1 - prob) ** self.gamma) * log_prob, 
-            target_tensor, 
+            ((1 - prob) ** self.gamma) * log_prob,
+            target_tensor,
             weight=self.weight,
-            reduction = self.reduction
+            reduction=self.reduction,
         )
+
 
 torch.multiprocessing.set_sharing_strategy(
     'file_system'
@@ -284,9 +344,12 @@ else:
         args.pretrained_model, freeze_bert=args.freeze_bert, lstm_dim=args.lstm_dim
     )
 deep_punctuation.to(device)
-criterion = FocalLoss()
-optimizer = torch.optim.Adam(
-    deep_punctuation.parameters(), lr=args.lr, weight_decay=args.decay
+criterion = RecallLoss()
+optimizer = torch.optim.AdamW(
+    deep_punctuation.parameters(),
+    lr=args.lr,
+    weight_decay=args.decay,
+    asmgrad=True,
 )
 
 
