@@ -48,6 +48,19 @@ class RecallLoss(nn.Module):
         target_classes = target.flatten().cpu()
 
         cm = confusion_matrix(input_classes, target_classes, labels=range(C))
+        cm[0, 7] *= 2
+        cm[1, 7] *= 2
+        cm[2, 1] *= 2
+        cm[2, 7] *= 2
+        cm[3, 0] *= 3
+        cm[3, 7] *= 5
+        cm[4, 1] *= 3
+        cm[4, 7] *= 5
+        cm[5, 7] *= 4
+        cm[6, 0] *= 5
+        cm[6, 7] *= 4
+        cm[7, 0] *= 2
+        cm[7, 1] *= 2
 
         recall = (np.sum(cm, axis=0) + self.smooth) / (np.diag(cm) + self.smooth)
         recall = recall - 1
