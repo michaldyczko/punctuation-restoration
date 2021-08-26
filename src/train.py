@@ -5,6 +5,7 @@ import torch
 import torch.multiprocessing
 import torch.nn as nn
 import torch.nn.functional as F
+from sklearn.metrics import confusion_matrix
 from torch.utils import data
 from tqdm import tqdm
 
@@ -43,36 +44,17 @@ class RecallLoss(nn.Module):
 
     def forward(self, input, target):
         N, C = input.size()[:2]
-        _, predict = torch.max(input, 1)  # # (N, C, *) ==> (N, 1, *)
+        input_classes = torch.argmax(input, 1)  # # (N, C, *) ==> (N, 1, *)
+        target_classes = target.flatten()
 
-        predict = predict.view(N, 1, -1)  # (N, 1, *)
-        target_ = target.view(N, 1, -1)  # (N, 1, *)
-        last_size = target_.size(-1)
+        cm = confusion_matrix(input_classes, target_classes, labels=range(C))
 
-        ## convert predict & target (N, 1, *) into one hot vector (N, C, *)
-        predict_onehot = torch.zeros(
-            (N, C, last_size)
-        ).cuda()  # (N, 1, *) ==> (N, C, *)
-        predict_onehot.scatter_(1, predict, 1)  # (N, C, *)
-        target_onehot = torch.zeros((N, C, last_size)).cuda()  # (N, 1, *) ==> (N, C, *)
-        target_onehot.scatter_(1, target_, 1)  # (N, C, *)
-
-        true_positive = torch.sum(predict_onehot * target_onehot, dim=2)  # (N, C)
-        total_target = torch.sum(target_onehot, dim=2)  # (N, C)
-        ## Recall = TP / (TP + FN)
-        recall = (true_positive + self.smooth) / (total_target + self.smooth)  # (N, C)
-
+        recall = np.diag(cm) / np.sum(cm, axis=0)
         ## 0.05 not to ignore classes that doesn't appear in batch
-        recall = 1 - recall + 0.05
-        loss = []
-        for i in range(0, input.shape[0]):
-            self.nll_loss.weight = recall[i]
-            loss.append(
-                self.nll_loss(
-                    F.log_softmax(input[i].unsqueeze(0), dim=1), target[i].unsqueeze(0)
-                )
-            )
-        loss = torch.stack(loss, dim=0).mean()
+        recall = 1.05 - recall
+
+        self.nll_loss.weight = recall
+        loss = self.nll_loss(F.log_softmax(input, dim=-1), target)
         return loss
 
 
