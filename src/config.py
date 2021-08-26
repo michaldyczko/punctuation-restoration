@@ -69,5 +69,5 @@ MODELS = {
         768,
         'bert',
     ),
-    'roberta_large_transformers': (AutoModel, RobertaTokenizer, 1024, 'roberta'),
+    'roberta_large_transformers': (AutoModel, PreTrainedTokenizerFast, 1024, 'roberta'),
 }
