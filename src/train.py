@@ -37,7 +37,7 @@ class RecallLoss(nn.Module):
         ignore_index=255,
     ):
         super(RecallLoss, self).__init__()
-        self.smooth = 1e-5
+        self.smooth = 0.05
         self.nll_loss = nn.NLLLoss(
             weight=None, ignore_index=ignore_index, reduction='mean'
         )
