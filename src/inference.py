@@ -82,7 +82,7 @@ def inference():
         bigtext = f.read()
     result = []
     for text in bigtext.split('\n'):
-        text = re.sub(r"[,:\-–.!;?]", '', text)
+        # text = re.sub(r"[,:\-–.!;?]", '', text)
         words_original_case = text.split()
         words = text.lower().split()
 
@@ -116,7 +116,9 @@ def inference():
                     TOKEN_IDX[token_style]['PAD'] for _ in range(sequence_len - len(x))
                 ]
                 y_mask = y_mask + [0 for _ in range(sequence_len - len(y_mask))]
-            attn_mask = [1 if token != TOKEN_IDX[token_style]['PAD'] else 0 for token in x]
+            attn_mask = [
+                1 if token != TOKEN_IDX[token_style]['PAD'] else 0 for token in x
+            ]
 
             x = torch.tensor(x).reshape(1, -1)
             y_mask = torch.tensor(y_mask)
