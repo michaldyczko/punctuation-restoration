@@ -16,7 +16,7 @@ punctuation_dict = {
     "EXCLAMATION_MARK": 3,
     "HYPHEN": 4,
     "COLON": 5,
-    "ELLIPIS": 6,
+    "ELLIPSIS": 6,
     # "SEMICOLON": 7,
     # "QUOTATION_MARK": 8,
     "BLANK": 7,
