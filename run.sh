@@ -19,4 +19,4 @@ else
     echo "----------- roberta_large_transformers FOUND -----------"
 fi
 echo "----------- TRAINING -----------"
-python3 src/train.py --cuda=True --pretrained-model=roberta_large_transformers --freeze-bert=False --lstm-dim=-1 --language=poleval --seed=1 --lr=2e-5 --epoch=50 --use-crf=False --augment-type=all  --augment-rate=0.1 --alpha-sub=0.4 --alpha-del=0.4 --data-path=data --save-path=test_mgpu --batch-size=64 --sequence-length=128 --decay=0.05
+python3 src/train.py --cuda=True --pretrained-model=roberta_large_transformers --freeze-bert=False --lstm-dim=-1 --language=poleval --seed=1 --lr=2e-5 --epoch=50 --use-crf=False --augment-type=all  --augment-rate=0.1 --alpha-sub=0.4 --alpha-del=0.4 --data-path=data --save-path=test_mgpu --batch-size=32 --sequence-length=256 --decay=0.01

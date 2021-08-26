@@ -52,7 +52,9 @@ class RecallLoss(nn.Module):
         recall = (np.sum(cm, axis=0) + self.smooth) / (np.diag(cm) + self.smooth)
         recall = recall - 1
 
-        self.nll_loss.weight = torch.tensor(recall, device=input.device)
+        self.nll_loss.weight = torch.tensor(
+            recall, device=input.device, dtype=torch.Float
+        )
         loss = self.nll_loss(F.log_softmax(input, dim=-1), target)
         return loss
 
