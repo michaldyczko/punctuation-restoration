@@ -377,7 +377,7 @@ def validate(data_loader):
                 y_predict = deep_punctuation(x, att)
                 y = y.view(-1)
                 y_predict = y_predict.view(-1, y_predict.shape[2])
-                loss = RecallLoss(y_predict, y) + FocalLoss(y_predict, y)
+                loss = RecallLoss()(y_predict, y) + FocalLoss()(y_predict, y)
                 y_predict = torch.argmax(y_predict, dim=1).view(-1)
             val_loss += loss.item()
             num_iteration += 1
@@ -473,7 +473,7 @@ def train():
                 y_predict = deep_punctuation(x, att)
                 y_predict = y_predict.view(-1, y_predict.shape[2])
                 y = y.view(-1)
-                loss = RecallLoss(y_predict, y) + FocalLoss(y_predict, y)
+                loss = RecallLoss()(y_predict, y) + FocalLoss()(y_predict, y)
                 y_predict = torch.argmax(y_predict, dim=1).view(-1)
 
                 correct += torch.sum(y_mask * (y_predict == y).long()).item()
