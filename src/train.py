@@ -44,22 +44,21 @@ class RecallLoss(nn.Module):
 
     def forward(self, input, target):
         N, C = input.size()[:2]
-        input_classes = torch.argmax(input, 1)  # # (N, C, *) ==> (N, 1, *)
-        target_classes = target.flatten()
+        input_classes = torch.argmax(input, 1).cpu()  # # (N, C, *) ==> (N, 1, *)
+        target_classes = target.flatten().cpu()
 
         cm = confusion_matrix(input_classes, target_classes, labels=range(C))
 
-        recall = np.diag(cm) / np.sum(cm, axis=0)
-        ## 0.05 not to ignore classes that doesn't appear in batch
-        recall = 1.05 - recall
+        recall = (np.sum(cm, axis=0) + self.smooth) / (np.diag(cm) + self.smooth)
+        recall = recall - 1
 
-        self.nll_loss.weight = recall
+        self.nll_loss.weight = torch.tensor(recall)
         loss = self.nll_loss(F.log_softmax(input, dim=-1), target)
         return loss
 
 
 class FocalLoss(nn.Module):
-    def __init__(self, weight=None, gamma=2.0, reduction='mean'):
+    def __init__(self, weight=None, gamma=3.0, reduction='mean'):
         nn.Module.__init__(self)
         self.weight = weight
         self.gamma = gamma
