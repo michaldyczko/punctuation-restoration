@@ -62,7 +62,8 @@ class RecallLoss(nn.Module):
         ## Recall = TP / (TP + FN)
         recall = (true_positive + self.smooth) / (total_target + self.smooth)  # (N, C)
 
-        recall = 1 - recall
+        ## 0.05 not to ignore classes that doesn't appear in batch
+        recall = 1 - recall + 0.05
         loss = []
         for i in range(0, input.shape[0]):
             self.nll_loss.weight = recall[i]
@@ -322,7 +323,7 @@ else:
     raise ValueError('Incorrect language argument for Dataset')
 
 # Data Loaders
-data_loader_params = {'batch_size': args.batch_size, 'shuffle': True, 'num_workers': 1}
+data_loader_params = {'batch_size': args.batch_size, 'shuffle': True, 'num_workers': 4}
 train_loader = torch.utils.data.DataLoader(train_set, **data_loader_params)
 val_loader = torch.utils.data.DataLoader(val_set, **data_loader_params)
 test_loaders = [torch.utils.data.DataLoader(x, **data_loader_params) for x in test_set]
@@ -344,12 +345,8 @@ else:
         args.pretrained_model, freeze_bert=args.freeze_bert, lstm_dim=args.lstm_dim
     )
 deep_punctuation.to(device)
-criterion = RecallLoss()
-optimizer = torch.optim.AdamW(
-    deep_punctuation.parameters(),
-    lr=args.lr,
-    weight_decay=args.decay,
-    amsgrad=True,
+optimizer = torch.optim.Adam(
+    deep_punctuation.parameters(), lr=args.lr, weight_decay=args.decay
 )
 
 
@@ -380,7 +377,7 @@ def validate(data_loader):
                 y_predict = deep_punctuation(x, att)
                 y = y.view(-1)
                 y_predict = y_predict.view(-1, y_predict.shape[2])
-                loss = criterion(y_predict, y)
+                loss = RecallLoss(y_predict, y) + FocalLoss(y_predict, y)
                 y_predict = torch.argmax(y_predict, dim=1).view(-1)
             val_loss += loss.item()
             num_iteration += 1
@@ -476,7 +473,7 @@ def train():
                 y_predict = deep_punctuation(x, att)
                 y_predict = y_predict.view(-1, y_predict.shape[2])
                 y = y.view(-1)
-                loss = criterion(y_predict, y)
+                loss = RecallLoss(y_predict, y) + FocalLoss(y_predict, y)
                 y_predict = torch.argmax(y_predict, dim=1).view(-1)
 
                 correct += torch.sum(y_mask * (y_predict == y).long()).item()

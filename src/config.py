@@ -17,6 +17,8 @@ punctuation_dict = {
     "HYPHEN": 4,
     "COLON": 5,
     "ELLIPIS": 6,
+    # "SEMICOLON": 7,
+    # "QUOTATION_MARK": 8,
     "BLANK": 7,
 }
 
@@ -28,7 +30,9 @@ punctuation_map = {
     4: "-",
     5: ":",
     6: "...",
-    7: ""
+    # 7: ";",
+    # 8: '"',
+    7: "",
 }
 
 # pretrained model name: (model class, model tokenizer, output dimension, token style)
@@ -65,10 +69,5 @@ MODELS = {
         768,
         'bert',
     ),
-    'roberta_large_transformers': (
-        AutoModel,
-        PreTrainedTokenizerFast,
-        1024,
-        'roberta'
-    )
+    'roberta_large_transformers': (AutoModel, RobertaTokenizer, 1024, 'roberta'),
 }
