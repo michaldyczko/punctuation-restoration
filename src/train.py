@@ -73,7 +73,7 @@ class RecallLoss(nn.Module):
 
 
 class FocalLoss(nn.Module):
-    def __init__(self, weight=None, gamma=3.0, reduction='mean'):
+    def __init__(self, weight=None, gamma=2.0, reduction='mean'):
         nn.Module.__init__(self)
         self.weight = weight
         self.gamma = gamma
