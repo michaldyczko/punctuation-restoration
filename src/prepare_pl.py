@@ -224,7 +224,7 @@ def convert_full_date(match_obj):
         day = change_suffix(day, suffix='ego')
         year = num2words(match_obj.group(4), to='ordinal', lang='pl')
         year = change_suffix(year, suffix='ego')
-        return f"{prefix} {day} {month} {year} roku "
+        return f"{prefix} {day} {month} {year} roku{'.' if '.' in match_obj.group(5) else ''} "
     else:
         return match_obj.group(0)
 
@@ -492,7 +492,7 @@ def clean_text_tts(txt):
     txt = re.sub(r'[\t ]0[\t ]?,[\t ]?5[\t ]', r' pół ', txt)
     txt = re.sub(r'(\d[\t ]?),[\t ]?5[\t ]', r'\g<1> i pół ', txt)
     txt = re.sub(
-        r'(^|[\t ]+)(\d{1,2})[\t ]+(\w{4,}?)[\t ]+([0-9]{4}[\t ]*)',
+        r'(^|[\t ]+)(\d{1,2})[\t ]+(\w{4,}?)[\t ]+([0-9]{4}[\t ]*)(r |r\.|roku)?',
         convert_full_date,
         txt,
         flags=re.I | re.M,
@@ -535,7 +535,7 @@ def clean_text_tts(txt):
     )
     txt = re.sub(
         r'(^|[\t ]+)(od|do)([\t ]\w+)?[\t ]([0-9]{4})([\t .]?)',
-        lambda match_obj: f"{match_obj.group(1)}{match_obj.group(2)}{match_obj.group(3)} {change_suffix(num2words(match_obj.group(4), to='ordinal', lang='pl'), suffix='ego') if int(match_obj.group(4)) != 0 else match_obj.group(4)}{match_obj.group(5)}",
+        lambda match_obj: f"{match_obj.group(1)}{match_obj.group(2)}{match_obj.group(3) or ''} {change_suffix(num2words(match_obj.group(4), to='ordinal', lang='pl'), suffix='ego') if int(match_obj.group(4)) != 0 else match_obj.group(4)}{match_obj.group(5)}",
         txt,
         flags=re.I | re.M,
     )
