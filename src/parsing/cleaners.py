@@ -19,7 +19,7 @@ from .polish_abbrs import _acronyms_pl
 
 
 # Regular expression matching whitespace:
-_whitespace_re = re.compile(r'\s+')
+_whitespace_re = re.compile(r'[ \t]+')
 
 # List of (regular expression, replacement) pairs for abbreviations:
 _abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in [
@@ -43,7 +43,7 @@ _abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in 
   ('ft', 'fort'),
 ]]
 
-_abbreviations_pl = [(re.compile(rf'\s{x}[\.,]?\s|\s{x}[\.,]?$', re.IGNORECASE), rf' {y} ') for x, y in [
+_abbreviations_pl = [(re.compile(rf'^\s{x}[\.,]?\s|\s{x}[\.,]?$', re.IGNORECASE), rf' {y} ') for x, y in [
   (r'sz', 'szanowny'),
   (r'dr', 'doktor'),
   (r'gen', 'generał'),
