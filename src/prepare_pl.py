@@ -125,10 +125,14 @@ def change_suffix(string, suffix):
             words.append(word + suffix)
         elif word[-1] == 'i' and suffix == "m":
             words.append(word + suffix)
+        elif word[-1] == 'i' and suffix == "ej":
+            words.append(word + suffix)
         elif word[-1] == 'y' and suffix == "ego":
             words.append(word[:-1] + suffix)
         elif word[-1] == 'y' and suffix == "m":
             words.append(word + suffix)
+        elif word[-1] == 'y' and suffix == "ej":
+            words.append(word[:-1] + suffix)
         else:
             words.append(word)
     return " ".join(words)
@@ -427,7 +431,11 @@ def clean_text_parsed(txt):
     txt = re.sub(r'[\t ]+;[\t ]*', r'; ', txt)
     txt = re.sub(r',+', r',', txt)
     txt = re.sub(r',\.', r'.', txt)
-    txt = re.sub(r'([0-9]+)[\t ]*:[\t ]*([0-9]+)', r'\g<1>:\g<2>', txt)
+    txt = re.sub(
+        r'([0-9]+)([\t ]*:[\t ]*([0-9]+))+',
+        lambda m: re.sub(r'[\t ]', '', m.group(0)),
+        txt,
+    )
     return txt
 
 
@@ -538,7 +546,7 @@ def clean_text_tts(txt):
         flags=re.I | re.M,
     )
     txt = re.sub(
-        r'(^|[\t ]+)(o|po|na|przed|do)[\t ]*(godz\.?|godzinie|godziny|godziną|godzinę)?[\t ]*(\d{1,2})(:\d{2})?(:\d{2})?',
+        r'(^|[\t ]+)(o|po|na|przed|do)[\t ]*(godz\.?|godzinie|godziny|godziną|godzinę)?[\t ]*(\d{1,2})(:[\t ]*\d{2})?(:[\t ]*\d{2})?',
         convert_full_time,
         txt,
         flags=re.I | re.M,
